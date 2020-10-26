@@ -54,7 +54,7 @@ def get_env_kwargs(env_name):
         kwargs['optimizer_spec'] = atari_optimizer(kwargs['num_timesteps'])
         kwargs['exploration_schedule'] = atari_exploration_schedule(kwargs['num_timesteps'])
 
-    elif env_name == 'LunarLander-v3':
+    elif env_name in ['LunarLander-v3', 'pick-place-v1']:
         def lunar_empty_wrapper(env):
             return env
         kwargs = {
