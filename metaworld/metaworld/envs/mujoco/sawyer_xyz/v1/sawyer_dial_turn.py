@@ -45,7 +45,10 @@ class SawyerDialTurnEnv(SawyerXYZEnv):
         ob = super().step(action)
         reward, reachDist, pullDist = self.compute_reward(action, ob)
         self.curr_path_length += 1
-
+        if self.curr_path_length == self.max_path_length:	
+            done = True	
+        else:	
+            done = False
         info = {
             'reachDist': reachDist,
             'goalDist': pullDist,
@@ -54,7 +57,7 @@ class SawyerDialTurnEnv(SawyerXYZEnv):
             'success': float(pullDist <= 0.03)
         }
 
-        return ob, reward, False, info
+        return ob, reward, done, info
 
     def _get_pos_objects(self):
         return self._get_site_pos('dialStart')

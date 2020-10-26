@@ -47,6 +47,10 @@ class SawyerCoffeePushEnv(SawyerXYZEnv):
         ob = super().step(action)
         reward, reachDist, pushDist = self.compute_reward(action, ob)
         self.curr_path_length += 1
+        if self.curr_path_length == self.max_path_length:	
+            done = True	
+        else:	
+            done = False
         info = {
             'reachDist': reachDist,
             'goalDist': pushDist,
@@ -55,7 +59,7 @@ class SawyerCoffeePushEnv(SawyerXYZEnv):
             'success': float(pushDist <= 0.07)
         }
 
-        return ob, reward, False, info
+        return ob, reward, done, info
 
     @property
     def _target_site_config(self):
