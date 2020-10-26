@@ -57,16 +57,16 @@ class RL_Trainer(object):
         self.env = mt1.train_classes[self.params['env_name']]()
         task = random.choice(mt1.train_tasks)
         self.env.set_task(task)
-        # if 'env_wrappers' in self.params:
-        #     # These operations are currently only for Atari envs
-        #     self.env = wrappers.Monitor(self.env, os.path.join(self.params['logdir'], "gym"), force=True)
-        #     self.env = params['env_wrappers'](self.env)
-        #     self.mean_episode_reward = -float('nan')
-        #     self.best_mean_episode_reward = -float('inf')
-        # if 'non_atari_colab_env' in self.params and self.params['video_log_freq'] > 0:
-        #     self.env = wrappers.Monitor(self.env, os.path.join(self.params['logdir'], "gym"), force=True)
-        #     self.mean_episode_reward = -float('nan')
-        #     self.best_mean_episode_reward = -float('inf')
+        if 'env_wrappers' in self.params:
+            # These operations are currently only for Atari envs
+            self.env = wrappers.Monitor(self.env, os.path.join(self.params['logdir'], "meta"), force=True)
+            self.env = params['env_wrappers'](self.env)
+            self.mean_episode_reward = -float('nan')
+            self.best_mean_episode_reward = -float('inf')
+        if 'non_atari_colab_env' in self.params and self.params['video_log_freq'] > 0:
+            self.env = wrappers.Monitor(self.env, os.path.join(self.params['logdir'], "meta"), force=True)
+            self.mean_episode_reward = -float('nan')
+            self.best_mean_episode_reward = -float('inf')
 
         self.env.seed(seed)
 

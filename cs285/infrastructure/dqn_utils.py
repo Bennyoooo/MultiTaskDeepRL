@@ -339,7 +339,7 @@ def get_wrapper_by_name(env, classname):
             raise ValueError("Couldn't find wrapper named %s"%classname)
 
 class MemoryOptimizedReplayBuffer(object):
-    def __init__(self, size, frame_history_len, lander=False):
+    def __init__(self, size, frame_history_len, ac_num, lander=False):
         """This is a memory efficient implementation of the replay buffer.
 
         The sepecific memory optimizations use here are:
@@ -377,6 +377,7 @@ class MemoryOptimizedReplayBuffer(object):
         self.action   = None
         self.reward   = None
         self.done     = None
+        self.ac_num = ac_num
 
     def can_sample(self, batch_size):
         """Returns true if `batch_size` different transitions can be sampled from the buffer."""
@@ -485,11 +486,11 @@ class MemoryOptimizedReplayBuffer(object):
         """
         if self.obs is None:
             self.obs      = np.empty([self.size] + list(frame.shape), dtype=np.float32 if self.lander else np.uint8)
-            self.action   = np.empty([self.size],                     dtype=np.int32)
-            self.reward   = np.empty([self.size],                     dtype=np.float32)
-            self.done     = np.empty([self.size],                     dtype=np.bool)
-        self.obs[self.next_idx] = frame
 
+        self.obs[self.next_idx] = frame
+        self.action = np.empty((self.size, self.ac_num))
+        self.reward = np.empty([self.size], dtype=np.float32)
+        self.done = np.empty([self.size], dtype=np.bool)
         ret = self.next_idx
         self.next_idx = (self.next_idx + 1) % self.size
         self.num_in_buffer = min(self.size, self.num_in_buffer + 1)
