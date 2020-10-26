@@ -77,7 +77,11 @@ class SawyerPickPlaceEnvV2(SawyerXYZEnv):
         }
 
         self.curr_path_length += 1
-        return ob, rew, False, info
+        if self.curr_path_length == self.max_path_length:	
+            done = True	
+        else:	
+            done = False
+        return ob, rew, done, info
 
     def _get_pos_objects(self):
         return self.get_body_com('obj')

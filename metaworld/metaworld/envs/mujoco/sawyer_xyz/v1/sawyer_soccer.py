@@ -46,7 +46,10 @@ class SawyerSoccerEnv(SawyerXYZEnv):
         ob = super().step(action)
         reward, reachDist, pushDist = self.compute_reward(action, ob)
         self.curr_path_length += 1
-
+        if self.curr_path_length == self.max_path_length:	
+            done = True	
+        else:	
+            done = False
         info = {
             'reachDist': reachDist,
             'goalDist': pushDist,
@@ -55,7 +58,7 @@ class SawyerSoccerEnv(SawyerXYZEnv):
             'success': float(pushDist <= 0.07)
         }
 
-        return ob, reward, False, info
+        return ob, reward, done, info
 
     def _get_pos_objects(self):
         return self.data.get_geom_xpos('objGeom')

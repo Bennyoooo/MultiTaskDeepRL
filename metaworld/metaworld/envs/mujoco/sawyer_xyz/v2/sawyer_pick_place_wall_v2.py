@@ -78,7 +78,11 @@ class SawyerPickPlaceWallEnvV2(SawyerXYZEnv):
         }
 
         self.curr_path_length +=1
-        return ob, reward, False, info
+        if self.curr_path_length == self.max_path_length:	
+            done = True	
+        else:	
+            done = False
+        return ob, reward, done, info
 
     def _get_pos_objects(self):
         return self.data.get_geom_xpos('objGeom')

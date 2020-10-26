@@ -55,7 +55,10 @@ class SawyerPegInsertionSideEnv(SawyerXYZEnv):
         ob = super().step(action)
         reward, _, reachDist, pickRew, _, placingDist = self.compute_reward(action, ob)
         self.curr_path_length += 1
-
+        if self.curr_path_length == self.max_path_length:	
+            done = True	
+        else:	
+            done = False
         info = {
             'reachDist': reachDist,
             'pickRew': pickRew,
@@ -64,7 +67,7 @@ class SawyerPegInsertionSideEnv(SawyerXYZEnv):
             'success': float(placingDist <= 0.07)
         }
 
-        return ob, reward, False, info
+        return ob, reward, done, info
 
     def _get_pos_objects(self):
         return self.get_body_com('peg')
