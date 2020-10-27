@@ -60,7 +60,7 @@ class RL_Trainer(object):
         if 'env_wrappers' in self.params:
             # These operations are currently only for Atari envs
             self.env = wrappers.Monitor(self.env, os.path.join(self.params['logdir'], "meta"), force=True)
-            self.env = params['env_wrappers'](self.env)
+            # self.env = params['env_wrappers'](self.env)
             self.mean_episode_reward = -float('nan')
             self.best_mean_episode_reward = -float('inf')
         if 'non_atari_colab_env' in self.params and self.params['video_log_freq'] > 0:
@@ -84,11 +84,10 @@ class RL_Trainer(object):
         discrete = isinstance(self.env.action_space, gym.spaces.Discrete)
         # Are the observations images?
         img = len(self.env.observation_space.shape) > 2
-
         self.params['agent_params']['discrete'] = discrete
 
         # Observation and action sizes
-
+        
         ob_dim = self.env.observation_space.shape if img else self.env.observation_space.shape[0]
         ac_dim = self.env.action_space.n if discrete else self.env.action_space.shape[0]
         self.params['agent_params']['ac_dim'] = ac_dim
