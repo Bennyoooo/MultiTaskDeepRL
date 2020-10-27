@@ -9,6 +9,8 @@ from gym import wrappers
 import numpy as np
 import torch
 from cs285.infrastructure import pytorch_util as ptu
+import metaworld
+import random
 
 from cs285.infrastructure import utils
 from cs285.infrastructure.logger import Logger
@@ -40,8 +42,10 @@ class RL_Trainer(object):
         #############
 
         # Make the gym environment
-        self.env = gym.make(self.params["env_name"])
-        self.env.seed(seed)
+        mt1 = metaworld.MT1(self.params['env_name'])
+        self.env = mt1.train_classes[self.params['env_name']]()
+        task = random.choice(mt1.train_tasks)
+        self.env.set_task(task)
 
         # import plotting (locally if 'obstacles' env)
         if not (self.params["env_name"] == "obstacles-cs285-v0"):
