@@ -76,7 +76,9 @@ class RL_Trainer(object):
             matplotlib.use('Agg')
 
         # Maximum length for episodes
-        self.params['ep_len'] = self.params['ep_len'] or self.env.spec.max_episode_steps
+
+        self.params["ep_len"] = self.params["ep_len"] or self.env.max_path_length
+
         global MAX_VIDEO_LEN
         MAX_VIDEO_LEN = self.params['ep_len']
 
