@@ -27,15 +27,19 @@ def build_mlp(
 ):
     """
         Builds a feedforward neural network
+
         arguments:
             input_placeholder: placeholder variable for the state (batch_size, input_size)
             scope: variable scope of the network
+
             n_layers: number of hidden layers
             size: dimension of each hidden layer
             activation: activation of each hidden layer
+
             input_size: size of the input layer
             output_size: size of the output layer
             output_activation: activation of the output layer
+
         returns:
             output_placeholder: the result of a forward pass through the hidden layers + the output layer
     """

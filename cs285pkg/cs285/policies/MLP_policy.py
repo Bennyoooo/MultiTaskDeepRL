@@ -10,21 +10,22 @@ from torch import distributions
 
 from cs285.infrastructure import pytorch_util as ptu
 from cs285.policies.base_policy import BasePolicy
+from cs285.infrastructure.utils import normalize
 
 
 class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
-
-    def __init__(self,
-                 ac_dim,
-                 ob_dim,
-                 n_layers,
-                 size,
-                 discrete=False,
-                 learning_rate=1e-4,
-                 training=True,
-                 nn_baseline=False,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        ac_dim,
+        ob_dim,
+        n_layers,
+        size,
+        discrete=False,
+        learning_rate=1e-4,
+        training=True,
+        nn_baseline=False,
+        **kwargs
+    ):
         super().__init__(**kwargs)
 
         # init vars
@@ -38,20 +39,24 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         self.nn_baseline = nn_baseline
 
         if self.discrete:
-            self.logits_na = ptu.build_mlp(input_size=self.ob_dim,
-                                           output_size=self.ac_dim,
-                                           n_layers=self.n_layers,
-                                           size=self.size)
+            self.logits_na = ptu.build_mlp(
+                input_size=self.ob_dim,
+                output_size=self.ac_dim,
+                n_layers=self.n_layers,
+                size=self.size,
+            )
             self.logits_na.to(ptu.device)
             self.mean_net = None
             self.logstd = None
-            self.optimizer = optim.Adam(self.logits_na.parameters(),
-                                        self.learning_rate)
+            self.optimizer = optim.Adam(self.logits_na.parameters(), self.learning_rate)
         else:
             self.logits_na = None
-            self.mean_net = ptu.build_mlp(input_size=self.ob_dim,
-                                      output_size=self.ac_dim,
-                                      n_layers=self.n_layers, size=self.size)
+            self.mean_net = ptu.build_mlp(
+                input_size=self.ob_dim,
+                output_size=self.ac_dim,
+                n_layers=self.n_layers,
+                size=self.size,
+            )
             self.logstd = nn.Parameter(
                 torch.zeros(self.ac_dim, dtype=torch.float32, device=ptu.device)
             )
@@ -59,7 +64,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             self.logstd.to(ptu.device)
             self.optimizer = optim.Adam(
                 itertools.chain([self.logstd], self.mean_net.parameters()),
-                self.learning_rate
+                self.learning_rate,
             )
 
         if nn_baseline:
@@ -71,8 +76,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             )
             self.baseline.to(ptu.device)
             self.baseline_optimizer = optim.Adam(
-                self.baseline.parameters(),
-                self.learning_rate,
+                self.baseline.parameters(), self.learning_rate,
             )
         else:
             self.baseline = None
@@ -90,6 +94,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             observation = obs
         else:
             observation = obs[None]
+
         observation = ptu.from_numpy(observation)
         action_distribution = self(observation)
         action = action_distribution.sample()  # don't bother with rsample
@@ -115,8 +120,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             batch_dim = batch_mean.shape[0]
             batch_scale_tril = scale_tril.repeat(batch_dim, 1, 1)
             action_distribution = distributions.MultivariateNormal(
-                batch_mean,
-                scale_tril=batch_scale_tril,
+                batch_mean, scale_tril=batch_scale_tril,
             )
             return action_distribution
 
@@ -125,17 +129,73 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 #####################################################
 
 
-class MLPPolicyAC(MLPPolicy):
-    def update(self, observations, actions, adv_n=None):
-        # TODO: update the policy and return the loss
+class MLPPolicyPG(MLPPolicy):
+    def __init__(self, ac_dim, ob_dim, n_layers, size, **kwargs):
+
+        super().__init__(ac_dim, ob_dim, n_layers, size, **kwargs)
+        self.baseline_loss = nn.MSELoss()
+
+    def update(self, observations, actions, advantages, q_values=None):
         observations = ptu.from_numpy(observations)
         actions = ptu.from_numpy(actions)
-        advantages = ptu.from_numpy(adv_n)
+        advantages = ptu.from_numpy(advantages)
 
-        policy_dist = self.forward(observations)
-        log_probs = policy_dist.log_prob(actions)
-        loss = -(log_probs * advantages).sum()
+        # TODO: compute the loss that should be optimized when training with policy gradient
+        # HINT1: Recall that the expression that we want to MAXIMIZE
+        # is the expectation over collected trajectories of:
+        # sum_{t=0}^{T-1} [grad [log pi(a_t|s_t) * (Q_t - b_t)]]
+        # HINT2: you will want to use the `log_prob` method on the distribution returned
+        # by the `forward` method
+        # HINT3: don't forget that `optimizer.step()` MINIMIZES a loss
+        dist = self.forward(observations)
+        loss = torch.sum(-dist.log_prob(actions) * advantages)
+
+        # TODO done: optimize `loss` using `self.optimizer`
+        # HINT: remember to `zero_grad` first
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        return loss
+
+        if self.nn_baseline:
+            ## TODO: normalize the q_values to have a mean of zero and a standard deviation of one
+            ## HINT: there is a `normalize` function in `infrastructure.utils`
+            targets = normalize(q_values, np.mean(q_values), np.std(q_values))
+            targets = ptu.from_numpy(targets)
+
+            ## TODO: use the `forward` method of `self.baseline` to get baseline predictions
+            baseline_predictions = torch.squeeze(self.baseline.forward(observations))
+
+            ## avoid any subtle broadcasting bugs that can arise when dealing with arrays of shape
+            ## [ N ] versus shape [ N x 1 ]
+            ## HINT: you can use `squeeze` on torch tensors to remove dimensions of size 1
+            assert baseline_predictions.shape == targets.shape
+
+            # TODO: compute the loss that should be optimized for training the baseline MLP (`self.baseline`)
+            # HINT: use `F.mse_loss`
+            baseline_loss = F.mse_loss(baseline_predictions, targets)
+
+            # TODO done: optimize `baseline_loss` using `self.baseline_optimizer`
+            # HINT: remember to `zero_grad` first
+            self.baseline_optimizer.zero_grad()
+            baseline_loss.backward()
+            self.baseline_optimizer.step()
+
+        train_log = {
+            "Training Loss": ptu.to_numpy(loss),
+        }
+        return train_log
+
+    def run_baseline_prediction(self, obs):
+        """
+            Helper function that converts `obs` to a tensor,
+            calls the forward method of the baseline MLP,
+            and returns a np array
+
+            Input: `obs`: np.ndarray of size [N, 1]
+            Output: np.ndarray of size [N]
+
+        """
+        obs = ptu.from_numpy(obs)
+        predictions = self.baseline(obs)
+        return ptu.to_numpy(predictions)[:, 0]
+
