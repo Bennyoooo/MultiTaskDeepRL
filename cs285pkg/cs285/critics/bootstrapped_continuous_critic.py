@@ -22,6 +22,7 @@ class BootstrappedContinuousCritic(nn.Module, BaseCritic):
 
     def __init__(self, hparams):
         super().__init__()
+
         self.ob_dim = hparams['ob_dim']
         self.ac_dim = hparams['ac_dim']
         self.discrete = hparams['discrete']
