@@ -149,20 +149,13 @@ class RL_Trainer(object):
                 self.logmetrics = False
 
             # collect trajectories, to be used for training
-            if isinstance(self.agent, DQNAgent):
-                # only perform an env step and add to replay buffer for DQN
-                self.agent.step_env()
-                envsteps_this_batch = 1
-                train_video_paths = None
-                paths = None
-            else:
-                use_batchsize = self.params['batch_size']
-                if itr==0:
-                    use_batchsize = self.params['batch_size_initial']
-                paths, envsteps_this_batch, train_video_paths = (
-                    self.collect_training_trajectories(
-                        itr, initial_expertdata, collect_policy, use_batchsize)
-                )
+            use_batchsize = self.params['batch_size']
+            if itr==0:
+                use_batchsize = self.params['batch_size_initial']
+            paths, envsteps_this_batch, train_video_paths = (
+                self.collect_training_trajectories(
+                    itr, initial_expertdata, collect_policy, use_batchsize)
+            )
 
             self.total_envsteps += envsteps_this_batch
 
