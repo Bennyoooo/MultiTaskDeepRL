@@ -1,10 +1,10 @@
 import metaworld
 import random
 
-mt1 = metaworld.MT1('pick-place-v1') # Construct the benchmark, sampling tasks
+mt1 = metaworld.MT1('push-v1') # Construct the benchmark, sampling tasks
 
-env = mt1.train_classes['pick-place-v1']()
+env = mt1.train_classes['push-v1']()
 task = random.choice(mt1.train_tasks)
 env.set_task(task)
-a = env.action_space
-print(a.shape[0])
+a = env.action_space.sample()
+print(a)
