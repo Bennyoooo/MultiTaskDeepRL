@@ -60,6 +60,8 @@ class SawyerBoxCloseEnv(SawyerXYZEnv):
             'goalDist': placingDist,
             'success': float(placingDist <= 0.08)
         }
+        if info['success']:
+            done = True
 
         return ob, reward, done, info
 

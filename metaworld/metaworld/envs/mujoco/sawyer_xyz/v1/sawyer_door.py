@@ -61,6 +61,8 @@ class SawyerDoorEnv(SawyerXYZEnv):
             'pickRew': None,
             'success': float(pullDist <= 0.08)
         }
+        if info['success']:
+            done = True
 
         return ob, reward, done, info
 

@@ -49,6 +49,12 @@ class PG_Trainer(object):
             collect_policy = self.rl_trainer.agent.actor,
             eval_policy = self.rl_trainer.agent.actor,
             )
+        if self.params['two_tasks']:
+            self.rl_trainer.run_second_task_loop(
+                self.params['n_iter'],
+                collect_policy=self.rl_trainer.agent.actor,
+                eval_policy=self.rl_trainer.agent.actor,
+            )
 
 
 def main():
@@ -59,11 +65,16 @@ def main():
         '--env_name',
         default='pick-place-v1'
     )
+    parser.add_argument(
+        '--env_name_2',
+        default='pick-place-v1'
+    )
     parser.add_argument('--exp_name', type=str, default='todo')
     parser.add_argument('--n_iter', '-n', type=int, default=200)
 
     parser.add_argument('--reward_to_go', '-rtg', action='store_true')
     parser.add_argument('--nn_baseline', action='store_true')
+    parser.add_argument('--two_tasks', action='store_true')
     parser.add_argument('--dont_standardize_advantages', '-dsa', action='store_true')
     parser.add_argument('--batch_size', '-b', type=int, default=1000) #steps collected per train iteration
     parser.add_argument('--eval_batch_size', '-eb', type=int, default=400) #steps collected per eval iteration

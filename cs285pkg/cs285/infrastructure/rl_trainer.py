@@ -31,6 +31,8 @@ class RL_Trainer(object):
         self.params = params
         self.logger = Logger(self.params["logdir"])
 
+        self.second_task = False
+
         # Set random seeds
         seed = self.params["seed"]
         np.random.seed(seed)
@@ -47,6 +49,11 @@ class RL_Trainer(object):
         task = random.choice(mt1.train_tasks)
         self.env.set_task(task)
 
+        mt2 = metaworld.MT1(self.params['env_name_2'])
+        self.env2 = mt2.train_classes[self.params['env_name_2']]()
+        task = random.choice(mt2.train_tasks)
+        self.env2.set_task(task)
+
         # import plotting (locally if 'obstacles' env)
         if not (self.params["env_name"] == "obstacles-cs285-v0"):
             import matplotlib
@@ -54,7 +61,7 @@ class RL_Trainer(object):
             matplotlib.use("Agg")
 
         # Maximum length for episodes
-        self.params["ep_len"] = self.params["ep_len"] or self.env.spec.max_episode_steps
+        self.params["ep_len"] = self.params["ep_len"] or self.env.max_path_length
         global MAX_VIDEO_LEN
         MAX_VIDEO_LEN = self.params["ep_len"]
 
@@ -113,6 +120,7 @@ class RL_Trainer(object):
         :param expert_policy:
         """
 
+
         # init vars at beginning of training
         self.total_envsteps = 0
         self.start_time = time.time()
@@ -124,6 +132,79 @@ class RL_Trainer(object):
             if (
                 itr % self.params["video_log_freq"] == 0
                 and self.params["video_log_freq"] != -1
+            ):
+                self.logvideo = True
+            else:
+                self.logvideo = False
+            self.log_video = self.logvideo
+
+            # decide if metrics should be logged
+            if self.params["scalar_log_freq"] == -1:
+                self.logmetrics = False
+            elif itr % self.params["scalar_log_freq"] == 0:
+                self.logmetrics = True
+            else:
+                self.logmetrics = False
+
+            # collect trajectories, to be used for training
+            training_returns = self.collect_training_trajectories(
+                itr, initial_expertdata, collect_policy, self.params["batch_size"]
+            )
+            paths, envsteps_this_batch, train_video_paths = training_returns
+            self.total_envsteps += envsteps_this_batch
+
+            # add collected data to replay buffer
+            self.agent.add_to_replay_buffer(paths)
+
+            # train agent (using sampled data from replay buffer)
+            train_logs = self.train_agent()
+
+            # log/save
+            if self.logvideo or self.logmetrics:
+                # perform logging
+                print("\nBeginning logging procedure...")
+                self.perform_logging(
+                    itr, paths, eval_policy, train_video_paths, train_logs
+                )
+
+                if self.params["save_params"]:
+                    self.agent.save(
+                        "{}/agent_itr_{}.pt".format(self.params["logdir"], itr)
+                    )
+
+    def run_second_task_loop(
+            self,
+            n_iter,
+            collect_policy,
+            eval_policy,
+            initial_expertdata=None,
+            relabel_with_expert=False,
+            start_relabel_with_expert=1,
+            expert_policy=None,
+    ):
+        """
+        :param n_iter:  number of (dagger) iterations
+        :param collect_policy:
+        :param eval_policy:
+        :param initial_expertdata:
+        :param relabel_with_expert:  whether to perform dagger
+        :param start_relabel_with_expert: iteration at which to start relabel with expert
+        :param expert_policy:
+        """
+
+        # init vars at beginning of training
+        self.total_envsteps = 0
+        self.start_time = time.time()
+        self.agent.env = self.env2
+
+        for itr in range(n_iter, 2*n_iter):
+            self.second_task = True
+            print("\n\n********** Iteration %i ************" % itr)
+
+            # decide if videos should be rendered/logged at this iteration
+            if (
+                    itr % self.params["video_log_freq"] == 0
+                    and self.params["video_log_freq"] != -1
             ):
                 self.logvideo = True
             else:
@@ -199,17 +280,17 @@ class RL_Trainer(object):
             # collect data to be used for training
         print("\nCollecting data to be used for training...")
         num_transitions_to_sample = self.params["batch_size_initial"]
-        paths, envsteps_this_batch = utils.sample_trajectories(
-            self.env, collect_policy, num_transitions_to_sample, self.params["ep_len"]
-        )
+        if self.second_task:
+            paths, envsteps_this_batch = utils.sample_trajectories(
+                self.env2, collect_policy, num_transitions_to_sample, self.params["ep_len"]
+            )
+        else:
+            paths, envsteps_this_batch = utils.sample_trajectories(
+                self.env, collect_policy, num_transitions_to_sample, self.params["ep_len"]
+            )
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         train_video_paths = None
-        if self.logvideo:
-            print("\nCollecting train rollouts to be used for saving videos...")
-            train_video_paths = utils.sample_n_trajectories(
-                self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True
-            )
 
         return paths, envsteps_this_batch, train_video_paths
 
