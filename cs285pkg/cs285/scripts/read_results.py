@@ -1,10 +1,8 @@
-import os
+import glob
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 
-DATA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data/')
-PLOT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../plots/')
 
 def get_section_results(file):
     """
@@ -15,81 +13,297 @@ def get_section_results(file):
     Z = []
     for e in tf.train.summary_iterator(file):
         for v in e.summary.value:
-            if v.tag == 'Train_EnvstepsSoFar':
+            if v.tag == "Train_EnvstepsSoFar":
                 X.append(v.simple_value)
-            elif v.tag == 'Train_AverageReturn':
+            elif v.tag == "Eval_AverageReturn":
                 Y.append(v.simple_value)
-            elif v.tag == 'Train_BestReturn':
+            elif v.tag == "Eval_StdReturn":
                 Z.append(v.simple_value)
-    return X, Y, Z
+    return np.array(X), np.array(Y), np.array(Z)
 
-if __name__ == '__main__':
 
-    title = 'experiment_1_MsPacman-v0'
-    file_names = ['hw3_q1_MsPacman-v0_11-10-2020_21-49-07']
-    labels = ['']
+if __name__ == "__main__":
+    import glob
 
-    # title = 'experiment_2'
-    # file_names = [['hw3_q2_dqn_1_LunarLander-v3_11-10-2020_19-00-45',
-    #               'hw3_q2_dqn_2_LunarLander-v3_11-10-2020_19-50-53',
-    #               'hw3_q2_dqn_3 _LunarLander-v3_12-10-2020_07-02-10'],
-    #               ['hw3_q2_doubledqn_1_LunarLander-v3_11-10-2020_20-53-54',
-    #                'hw3_q2_doubledqn_2 _LunarLander-v3_12-10-2020_08-32-04',
-    #                'hw3_q2_doubledqn_3 _LunarLander-v3_12-10-2020_09-10-20'
-    #               ]]
-    # labels = ['dqn', 'double_dqn']
+    # 1a
 
-    # plot for experiment 1b
-    # title = 'experiment_4_CartPole-v0'
-    # file_names = ['hw3_ q4_1_100_CartPole-v0_18-10-2020_10-22-53',
-    #               'hw3_ q4_10_10_CartPole-v0_18-10-2020_10-25-51',
-    #               'hw3_ q4_100_1_CartPole-v0_18-10-2020_10-24-29']
-    # labels = ['ntu:1_ngsptu:100', 'ntu:10_ngsptu:10', 'ntu:100_ngsptu:1']
+    fig, ax = plt.subplots()
 
-    # title = 'experiment_2'
-    # file_names = ['q3_b40000_r0.005_LunarLanderContinuous-v2_29-09-2020_17-34-48']
-    # labels = ['']
+    logdir = "data/q1_sb_no_rtg_dsa_CartPole-v0_28-09-2020_16-37-38"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
 
-    # title = 'experiment_5_HalfCheetah-v2'
-    # file_names = ['hw3_ q5_10_10_HalfCheetah-v2_18-10-2020_10-33-30']
-    # labels = ['']
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(x, (Y - Z), (Y + Z), alpha=0.3, label="sb_no_rtg_dsa")
 
-    # title = 'experiment_4a_HalCheetah_search'
-    # file_names = ['q4_search_b10000_lr0.005_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_04-35-28',
-    #               'q4_search_b10000_lr0.01_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_08-31-08',
-    #               'q4_search_b10000_lr0.02_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_08-46-58',
-    #               'q4_search_b30000_lr0.005_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_07-19-15',
-    #               'q4_search_b30000_lr0.01_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_04-57-58',
-    #               'q4_search_b30000_lr0.02_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_07-38-56',
-    #               'q4_search_b50000_lr0.005_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_06-44-40',
-    #               'q4_search_b50000_lr0.01_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_05-37-54',
-    #               'q4_search_b50000_lr0.02_rtg_nnbaseline_HalfCheetah-v2_29-09-2020_06-08-12']
-    # labels = ['b:10000_lr:0.005', 'b:10000_lr:0.01', 'b:10000_lr:0.02','b:30000_lr:0.005', 'b:30000_lr:0.01',
-    #           'b:30000_lr:0.02', 'b:50000_lr:0.005', 'b:50000_lr:0.01', 'b:50000_lr:0.02']
+    logdir = "data/q1_sb_rtg_dsa_CartPole-v0_28-09-2020_16-38-45"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
 
-    # plot for experiment 1b
-    # title = 'experiment_3_LunarLander-v3_'
-    # file_names = ['hw3_q2_dqn_1_LunarLander-v3_11-10-2020_19-00-45',
-    #               'hw3_q3_hparam1_LunarLander-v3_18-10-2020_19-24-20',
-    #               'hw3_q3_hparam2_LunarLander-v3_18-10-2020_20-02-46',
-    #               'hw3_q3_hparam3_LunarLander-v3_18-10-2020_21-08-31']
-    # labels = ['rl:1e-3', 'lr:1e-2', 'lr:1e-4', 'lr:5e-2']
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(x, (Y - Z), (Y + Z), alpha=0.3, label="sb_rtg_dsa")
 
-    for i in range(len(labels)):
-        # returns = []
-        # for j in range(3):
-        #     file_path = DATA_PATH + file_names[i][j]
-        #     x, eval_returns = get_section_results(file_path + "/" + os.listdir(file_path)[0])
-        #     returns.append(eval_returns)
-        # eval_returns = np.sum(returns, axis=0)/3
-        file_path = DATA_PATH + file_names[i]
-        x, eval_returns, z = get_section_results(file_path + "/" + os.listdir(file_path)[0])
+    logdir = "data/q1_sb_rtg_na_CartPole-v0_28-09-2020_16-39-53"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
 
-        plt.plot(x[1:], eval_returns, label='average')
-        plt.plot(x[2:], z, label='best so far')
-        plt.xlabel("num of steps")
-        plt.ylabel("average train_returns")
-    plt.title(title)
-    plt.legend()
-    plt.savefig(PLOT_PATH + title + '.pdf')
-    plt.show()
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(x, (Y - Z), (Y + Z), alpha=0.3, label="sb_rtg_na")
+
+    plt.xlabel("Iteration Number")
+    plt.ylabel("Eval_AverageReturn")
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+    plt.savefig("q1_sb.png", bbox_inches="tight")
+
+    # 1b
+
+    fig, ax = plt.subplots()
+
+    logdir = "data/q1_lb_no_rtg_dsa_CartPole-v0_28-09-2020_16-40-57"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(x, (Y - Z), (Y + Z), alpha=0.3, label="lb_no_rtg_dsa")
+
+    logdir = "data/q1_lb_rtg_dsa_CartPole-v0_28-09-2020_16-44-53"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(x, (Y - Z), (Y + Z), alpha=0.3, label="lb_rtg_dsa")
+
+    logdir = "data/q1_lb_rtg_na_CartPole-v0_28-09-2020_16-49-13"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(x, (Y - Z), (Y + Z), alpha=0.3, label="lb_rtg_na")
+
+    plt.xlabel("Iteration Number")
+    plt.ylabel("Eval_AverageReturn")
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+    plt.savefig("q1_lb.png", bbox_inches="tight")
+
+    # q2
+    fig, ax = plt.subplots()
+
+    logdir = "data/q2_optim_b300_r0.02_InvertedPendulum-v2_28-09-2020_17-17-21"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(x, (Y - Z), (Y + Z), alpha=0.3, label="b300_r0.02")
+
+    plt.xlabel("Iteration Number")
+    plt.ylabel("Eval_AverageReturn")
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+    plt.savefig("q2.png", bbox_inches="tight")
+
+    # q3
+    fig, ax = plt.subplots()
+
+    logdir = "data/q3_b40000_r0.005_LunarLanderContinuous-v2_28-09-2020_07-17-04"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b40000_r0.005_LunarLanderContinuous-v2",
+    )
+
+    plt.xlabel("Iteration Number")
+    plt.ylabel("Eval_AverageReturn")
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+    plt.savefig("q3.png", bbox_inches="tight")
+
+    # q4a
+
+    fig, ax = plt.subplots()
+
+    logdir = "data/q4_search_b10000_lr0.005_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_09-22-06"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b10000_lr0.005_rtg_nnbaseline",
+    )
+
+    logdir = (
+        "data/q4_search_b10000_lr0.01_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_09-31-34"
+    )
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b10000_lr0.01_rtg_nnbaseline",
+    )
+
+    logdir = (
+        "data/q4_search_b10000_lr0.02_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_09-41-01"
+    )
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b10000_lr0.02_rtg_nnbaseline",
+    )
+
+    #######################
+    logdir = "data/q4_search_b30000_lr0.005_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_09-50-10"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b30000_lr0.005_rtg_nnbaseline",
+    )
+
+    logdir = (
+        "data/q4_search_b30000_lr0.01_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_10-16-39"
+    )
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b30000_lr0.01_rtg_nnbaseline",
+    )
+
+    logdir = (
+        "data/q4_search_b30000_lr0.02_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_10-44-25"
+    )
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b30000_lr0.02_rtg_nnbaseline",
+    )
+
+    ################################################################
+
+    logdir = "data/q4_search_b50000_lr0.005_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_11-12-07"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b50000_lr0.005_rtg_nnbaseline",
+    )
+
+    logdir = (
+        "data/q4_search_b50000_lr0.01_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_11-58-25"
+    )
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b50000_lr0.01_rtg_nnbaseline",
+    )
+
+    logdir = (
+        "data/q4_search_b50000_lr0.02_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_12-45-02"
+    )
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b50000_lr0.02_rtg_nnbaseline",
+    )
+
+    plt.xlabel("Iteration Number")
+    plt.ylabel("Eval_AverageReturn")
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+    plt.savefig("q4a.png", bbox_inches="tight")
+
+    # q4b
+    fig, ax = plt.subplots()
+
+    logdir = "data/q4_b30000_r0.02_HalfCheetah-v2_28-09-2020_19-40-21"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b30000_r0.02",
+    )
+
+    logdir = "data/q4_b30000_r0.02_nnbaseline_HalfCheetah-v2_28-09-2020_20-31-04"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b30000_r0.02_nnbaseline",
+    )
+
+    logdir = "data/q4_b30000_r0.02_rtg_HalfCheetah-v2_28-09-2020_20-05-14"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b30000_r0.02_rtg",
+    )
+
+    logdir = "data/q4_b30000_r0.02_rtg_nnbaseline_HalfCheetah-v2_28-09-2020_20-55-48"
+    logdir = logdir + "/events*"
+    eventfile = glob.glob(logdir)[0]
+
+    X, Y, Z = get_section_results(eventfile)
+    x = np.arange(len(X))
+    ax.plot(x, Y)
+    ax.fill_between(
+        x, (Y - Z), (Y + Z), alpha=0.3, label="b30000_r0.02_rtg_nnbaseline",
+    )
+
+    plt.xlabel("Iteration Number")
+    plt.ylabel("Eval_AverageReturn")
+    plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
+    plt.savefig("q4b.png", bbox_inches="tight")

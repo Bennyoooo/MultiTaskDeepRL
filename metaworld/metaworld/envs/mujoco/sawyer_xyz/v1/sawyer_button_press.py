@@ -55,6 +55,8 @@ class SawyerButtonPressEnv(SawyerXYZEnv):
             'pickRew': None,
             'success': float(pressDist <= 0.02)
         }
+        if info['success']:
+            done = True
 
         return ob, reward, done, info
 

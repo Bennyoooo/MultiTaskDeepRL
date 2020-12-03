@@ -57,6 +57,8 @@ class SawyerPushBackEnv(SawyerXYZEnv):
             'pickRew': None,
             'success': float(pushDist <= 0.07)
         }
+        if info['success']:
+            done = True
 
         return ob, reward, done, info
 
