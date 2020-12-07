@@ -10,5 +10,8 @@ class BasePolicy(object, metaclass=abc.ABCMeta):
         """Return a dictionary of logging information."""
         raise NotImplementedError
 
+    def update_time(self, time):
+        return
+
     def save(self, filepath: str):
         raise NotImplementedError

@@ -3,6 +3,7 @@ import time
 
 from cs285.infrastructure.rl_trainer import RL_Trainer
 from cs285.agents.pg_agent import PGAgent
+from cs285.agents.psp_agent import PSPAgent
 
 class PG_Trainer(object):
 
@@ -32,7 +33,8 @@ class PG_Trainer(object):
         agent_params = {**computation_graph_args, **estimate_advantage_args, **train_args}
 
         self.params = params
-        self.params['agent_class'] = PGAgent
+        # self.params['agent_class'] = PGAgent
+        self.params['agent_class'] = PSPAgent
         self.params['agent_params'] = agent_params
         self.params['batch_size_initial'] = self.params['batch_size']
 
@@ -91,6 +93,7 @@ def main():
     parser.add_argument('--which_gpu', '-gpu_id', default=0)
     parser.add_argument('--video_log_freq', type=int, default=-1)
     parser.add_argument('--scalar_log_freq', type=int, default=1)
+    parser.add_argument('--period', type=int, default=2)
 
     parser.add_argument('--save_params', action='store_true')
 

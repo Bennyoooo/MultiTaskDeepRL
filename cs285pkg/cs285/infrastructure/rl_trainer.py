@@ -32,6 +32,7 @@ class RL_Trainer(object):
         self.logger = Logger(self.params["logdir"])
 
         self.second_task = False
+        self.period = params['period']
 
         # Set random seeds
         seed = self.params["seed"]
@@ -82,6 +83,7 @@ class RL_Trainer(object):
         ac_dim = self.env.action_space.n if discrete else self.env.action_space.shape[0]
         self.params["agent_params"]["ac_dim"] = ac_dim
         self.params["agent_params"]["ob_dim"] = ob_dim
+        self.params["agent_params"]["period"] = self.params["period"]
 
         # simulation timestep, will be used for video saving
         if "model" in dir(self.env):
@@ -157,6 +159,7 @@ class RL_Trainer(object):
             self.agent.add_to_replay_buffer(paths)
 
             # train agent (using sampled data from replay buffer)
+            self.agent.update_time(1)
             train_logs = self.train_agent()
 
             # log/save
@@ -230,6 +233,7 @@ class RL_Trainer(object):
             self.agent.add_to_replay_buffer(paths)
 
             # train agent (using sampled data from replay buffer)
+            self.agent.update_time(2)
             train_logs = self.train_agent()
 
             # log/save
