@@ -23,7 +23,9 @@ def get_section_results(file):
     return X, eval_returns, np.array(Z)
 
 
+
 if __name__ == "__main__":
+
 
     title = 'comparison'
     file_names = ['box-close_b3000_box-close-v1_28-10-2020_16-04-17', 'box-close_button-press_b3000_box-close-v1_28-10-2020_17-08-45']

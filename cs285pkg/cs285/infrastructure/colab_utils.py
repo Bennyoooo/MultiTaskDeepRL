@@ -15,11 +15,11 @@ def show_video():
     encoded = base64.b64encode(video)
     ipythondisplay.display(HTML(data='''<video alt="test" autoplay 
                 loop controls style="height: 400px;">
-                <source cs285="data:video/mp4;base64,{0}" type="video/mp4" />
+                <source src="data:video/mp4;base64,{0}" type="video/mp4" />
              </video>'''.format(encoded.decode('ascii'))))
   else: 
     print("Could not find video")
-
+    
 
 def wrap_env(env):
   env = Monitor(env, '/content/video', force=True)
