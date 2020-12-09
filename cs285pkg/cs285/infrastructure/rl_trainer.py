@@ -159,7 +159,7 @@ class RL_Trainer(object):
             self.agent.add_to_replay_buffer(paths)
 
             # train agent (using sampled data from replay buffer)
-            self.agent.update_time(1)
+            self.agent.update_time(0)
             train_logs = self.train_agent()
 
             # log/save
@@ -233,7 +233,7 @@ class RL_Trainer(object):
             self.agent.add_to_replay_buffer(paths)
 
             # train agent (using sampled data from replay buffer)
-            self.agent.update_time(2)
+            self.agent.update_time(1)
             train_logs = self.train_agent()
 
             # log/save
