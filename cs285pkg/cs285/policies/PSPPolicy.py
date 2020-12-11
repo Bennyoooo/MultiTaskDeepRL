@@ -11,7 +11,8 @@ from torch import distributions
 from cs285.infrastructure import pytorch_util as ptu
 from cs285.policies.base_policy import BasePolicy
 from cs285.infrastructure.utils import normalize
-from cs285.infrastructure.psp_net import RealHashNet, BinaryHashLinear
+from cs285.infrastructure.psp_net import RealHashNet, ComplexHashNet
+from cs285.infrastructure.psp_layer2 import *
 
 
 class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
@@ -39,7 +40,7 @@ class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         self.learning_rate = learning_rate
         self.training = training
         self.period = period
-        self.mean_net = RealHashNet(self.ob_dim, self.ac_dim, self.size, torch.tanh, self.n_layers, self.period, 'hash', BinaryHashLinear)
+        self.mean_net = ComplexHashNet(self.ob_dim, self.ac_dim, self.size, torch.tanh, self.n_layers, self.period, 'hash', RouteLinear)
         self.logstd = nn.Parameter(
             torch.zeros(self.ac_dim, dtype=torch.float32, device=ptu.device)
         )

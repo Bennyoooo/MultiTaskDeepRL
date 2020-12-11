@@ -1,5 +1,5 @@
-from cs285.infrastructure.psp_layer import *
-
+#from cs285.infrastructure.psp_layer import *
+from cs285.infrastructure.psp_layer2 import *
 
 class HashNet(nn.Module):
     def __init__(self, input_dim, output_dim, layer_size,
@@ -33,3 +33,17 @@ class RealHashNet(HashNet):
         return r, None, preactivations
 
 
+
+class ComplexHashNet(HashNet):
+    def forward(self, x, time):
+        preactivations = []
+        r_a, r_b = x, torch.zeros_like(x)
+        for layer_i, layer in enumerate(self.layers):
+            if layer_i > 0:
+                r_a = self.activation(r_a)
+                r_b = self.activation(r_b)
+            r_a = layer(r_a, time)
+            r_b = layer(r_b, time)
+            preactivations.append(r_a)
+            preactivations.append(r_b)
+        return r_a, r_b, preactivations
