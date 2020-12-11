@@ -17,7 +17,7 @@ class HashNet(nn.Module):
         for i in range(len(layer_units)-1):
             layers.append(layer_type(layer_units[i],
                                      layer_units[i+1],
-                                     period, key_pick))
+                                     period, key_pick, False))
         self.layers = nn.ModuleList(layers)
 
 class RealHashNet(HashNet):
