@@ -2,6 +2,7 @@ from typing import Union
 
 import torch
 from torch import nn
+from cs285.infrastructure.psp_layer import BinaryHashLinear
 
 Activation = Union[str, nn.Module]
 

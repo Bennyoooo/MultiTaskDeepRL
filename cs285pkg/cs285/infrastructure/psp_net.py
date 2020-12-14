@@ -17,7 +17,7 @@ class HashNet(nn.Module):
         for i in range(len(layer_units)-1):
             layers.append(layer_type(layer_units[i],
                                      layer_units[i+1],
-                                     period, key_pick, False))
+                                     period, key_pick))
         self.layers = nn.ModuleList(layers)
 
 class RealHashNet(HashNet):
@@ -29,6 +29,7 @@ class RealHashNet(HashNet):
                 r = self.activation(r)
             r = layer(r, time)
             preactivations.append(r)
+        r = nn.Identity()(r)
 
         return r, None, preactivations
 
@@ -47,3 +48,21 @@ class ComplexHashNet(HashNet):
             preactivations.append(r_a)
             preactivations.append(r_b)
         return r_a, r_b, preactivations
+
+
+class MLP(nn.Module):
+
+    def __init__(self, input_size, output_size, n_layers, size, activation, output_activation):
+        super(MLP, self).__init__()
+        self.n_layers = n_layers
+        self.linears = nn.ModuleList([nn.Linear(input_size, size)])
+        self.linears.extend([nn.Linear(size, size) for i in range(0, self.n_layers - 1)])
+        self.linears.append(nn.Linear(size, output_size))
+        self.activation = activation
+        self.output_activation = output_activation
+
+    def forward(self, x):
+        for i in range(self.n_layers):
+            x = self.activation(self.linears[i](x))
+        mean = self.output_activation(self.linears[self.n_layers](x))
+        return mean

@@ -33,8 +33,8 @@ class PG_Trainer(object):
         agent_params = {**computation_graph_args, **estimate_advantage_args, **train_args}
 
         self.params = params
-        # self.params['agent_class'] = PGAgent
-        self.params['agent_class'] = PSPAgent
+        self.params['agent_class'] = PGAgent
+        # self.params['agent_class'] = PSPAgent
         self.params['agent_params'] = agent_params
         self.params['batch_size_initial'] = self.params['batch_size']
 
