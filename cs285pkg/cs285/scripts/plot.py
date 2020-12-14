@@ -25,11 +25,9 @@ def get_section_results(file):
 
 
 if __name__ == "__main__":
-
-
-    title = 'comparison'
-    file_names = ['box-close_b3000_box-close-v1_28-10-2020_16-04-17', 'box-close_button-press_b3000_box-close-v1_28-10-2020_17-08-45']
-    labels = ['one_task', 'two_tasks']
+    title = 'new_comparison'
+    file_names = ['psp_exp1_box-close-v1_13-12-2020_21-46-52', 'nopsp_exp1_box-close-v1_13-12-2020_21-16-27']
+    labels = ['psp', 'no_psp']
     plt.figure(figsize=(14, 7))
     for i in range(len(labels)):
         file_path = DATA_PATH + file_names[i]
@@ -47,6 +45,3 @@ if __name__ == "__main__":
     plt.legend(fontsize=30)
     plt.savefig(PLOT_PATH + title + '.pdf')
     plt.show()
-
-
-
