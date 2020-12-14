@@ -239,11 +239,12 @@ class RL_Trainer(object):
             # log/save
             if self.logvideo or self.logmetrics:
                 # perform logging
+                self.agent.update_time(0)
                 print("\nBeginning logging procedure...")
                 self.perform_logging(
                     itr, paths, eval_policy, train_video_paths, train_logs
                 )
-
+                self.agent.update_time(1)
                 if self.params["save_params"]:
                     self.agent.save(
                         "{}/agent_itr_{}.pt".format(self.params["logdir"], itr)

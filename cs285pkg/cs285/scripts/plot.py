@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -27,8 +29,8 @@ def get_section_results(file):
 if __name__ == "__main__":
 
 
-    title = 'comparison'
-    file_names = ['box-close_b3000_box-close-v1_28-10-2020_16-04-17', 'box-close_button-press_b3000_box-close-v1_28-10-2020_17-08-45']
+    title = 'comparison-bew-base-psp'
+    file_names = ['nopsp_exp1_box-close-v1_13-12-2020_21-16-27', 'psp_exp1_box-close-v1_13-12-2020_21-46-52']
     labels = ['one_task', 'two_tasks']
     plt.figure(figsize=(14, 7))
     for i in range(len(labels)):
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     plt.title(title)
     plt.legend(fontsize=30)
     plt.savefig(PLOT_PATH + title + '.pdf')
-    plt.show()
+    # plt.show()
 
 
 

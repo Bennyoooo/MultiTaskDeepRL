@@ -78,10 +78,8 @@ class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
                qvals=None):
         observations = ptu.from_numpy(observations)
         actions = ptu.from_numpy(acs_na)
-        adv_n = ptu.from_numpy(adv_n)
-
         action_distribution = self(observations)
-        loss = - action_distribution.log_prob(actions) * adv_n
+        loss = -action_distribution.log_prob(actions) * ptu.from_numpy(adv_n)
         loss = loss.mean()
 
         self.optimizer.zero_grad()
