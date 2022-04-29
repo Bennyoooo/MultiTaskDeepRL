@@ -4,7 +4,7 @@ from .base_agent import BaseAgent
 from cs285.policies.MLP_policy import MLPPolicyPG
 from cs285.infrastructure.replay_buffer import ReplayBuffer
 from cs285.infrastructure.utils import normalize
-from cs285.policies.PSPPolicy import PSPPolicy
+
 
 class PGAgent(BaseAgent):
     def __init__(self, env, agent_params):
@@ -28,17 +28,6 @@ class PGAgent(BaseAgent):
             learning_rate=self.agent_params["learning_rate"],
             nn_baseline=self.agent_params["nn_baseline"],
         )
-
-        # self.actor = PSPPolicy(
-        #     self.agent_params["ac_dim"],
-        #     self.agent_params["ob_dim"],
-        #     self.agent_params["n_layers"],
-        #     self.agent_params["size"],
-        #     period=agent_params['period'],
-        #     discrete=self.agent_params["discrete"],
-        #     learning_rate=self.agent_params["learning_rate"],
-        #     nn_baseline=self.agent_params["nn_baseline"],
-        # )
 
         # replay buffer
         self.replay_buffer = ReplayBuffer(1000000)

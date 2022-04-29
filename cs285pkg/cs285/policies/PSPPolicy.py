@@ -11,8 +11,7 @@ from torch import distributions
 from cs285.infrastructure import pytorch_util as ptu
 from cs285.policies.base_policy import BasePolicy
 from cs285.infrastructure.utils import normalize
-from cs285.infrastructure.psp_net import RealHashNet, ComplexHashNet, MLP
-from cs285.infrastructure.psp_layer import *
+from cs285.infrastructure.psp_net import RealHashNet, BinaryHashLinear, ComplexHashNet, HashLinear
 
 
 class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
@@ -40,13 +39,9 @@ class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         self.learning_rate = learning_rate
         self.training = training
         self.period = period
-        self.mean_net = MLP(self.ob_dim, self.ac_dim, n_layers, size, nn.Tanh(), nn.Identity())
-        self.mean_net2 = ptu.build_mlp(
-                input_size=self.ob_dim,
-                output_size=self.ac_dim,
-                n_layers=self.n_layers,
-                size=self.size,
-            )
+        # self.mean_net = RealHashNet(self.ob_dim, self.ac_dim, self.size, torch.tanh, self.n_layers, self.period, 'hash', BinaryHashLinear)
+        self.mean_net = ComplexHashNet(self.ob_dim, self.ac_dim, self.size, torch.tanh, self.n_layers, self.period, 'hash',
+                                    HashLinear)
         self.logstd = nn.Parameter(
             torch.zeros(self.ac_dim, dtype=torch.float32, device=ptu.device)
         )
@@ -56,7 +51,6 @@ class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             itertools.chain([self.logstd], self.mean_net.parameters()),
             self.learning_rate,
         )
-        self.a = self.mean_net.parameters()
 
     def update_time(self, time):
         self.time = time
@@ -86,10 +80,8 @@ class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
                qvals=None):
         observations = ptu.from_numpy(observations)
         actions = ptu.from_numpy(acs_na)
-        adv_n = ptu.from_numpy(adv_n)
-
         action_distribution = self(observations)
-        loss = - action_distribution.log_prob(actions) * adv_n
+        loss = -action_distribution.log_prob(actions) * ptu.from_numpy(adv_n)
         loss = loss.mean()
 
         self.optimizer.zero_grad()
@@ -106,8 +98,7 @@ class PSPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor):
-        batch_mean = self.mean_net(observation)
-        # batch_mean2 = self.mean_net2(observation)
+        batch_mean = self.mean_net(observation, self.time)[0]
         scale_tril = torch.diag(torch.exp(self.logstd))
         batch_dim = batch_mean.shape[0]
         batch_scale_tril = scale_tril.repeat(batch_dim, 1, 1)

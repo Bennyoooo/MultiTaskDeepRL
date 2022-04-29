@@ -11,9 +11,6 @@ from torch import distributions
 from cs285.infrastructure import pytorch_util as ptu
 from cs285.policies.base_policy import BasePolicy
 from cs285.infrastructure.utils import normalize
-from cs285.infrastructure.psp_net import RealHashNet
-from cs285.infrastructure.psp_layer import BinaryHashLinear
-
 
 
 class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
@@ -60,7 +57,6 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
                 n_layers=self.n_layers,
                 size=self.size,
             )
-            # self.mean_net = RealHashNet(self.ob_dim, self.ac_dim, self.size, torch.tanh, self.n_layers, 2, 'hash', BinaryHashLinear)
             self.logstd = nn.Parameter(
                 torch.zeros(self.ac_dim, dtype=torch.float32, device=ptu.device)
             )
