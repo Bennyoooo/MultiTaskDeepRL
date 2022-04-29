@@ -1,3 +1,5 @@
+# Alleviate Catastrophic Forgetting For Deep RL Multi-task Learning
+
 Local Conda environment setup
 
 ```
@@ -7,3 +9,4 @@ export LD_LIBRARY_PATH=~/.mujoco/mujoco200/bin/
 pip install --user -r requirements.txt
 ```
 
+Here is our [final report](cs285_final_report.pdf).
